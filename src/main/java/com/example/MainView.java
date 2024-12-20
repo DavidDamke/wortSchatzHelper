@@ -3,6 +3,10 @@ package com.example;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Font;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -21,6 +25,8 @@ public class MainView {
     CardLayout cardLayout; 
 
     private ArrayList<String> wordList = new ArrayList<>();
+    private final String FILE_NAME = "wortSchatz.txt";
+
 
     public MainView(CardLayout cardLayout,JPanel cardPanel){
                 this.cardLayout = cardLayout; 
@@ -75,10 +81,25 @@ public class MainView {
     }
 
     private String getRandomWord() {
+        loadWordsFromFile();
         if (wordList.isEmpty()) {
             return "No Words Available";
         }
         Random random = new Random();
         return wordList.get(random.nextInt(wordList.size()));
+    }
+
+    private void loadWordsFromFile() {
+        File file = new File(FILE_NAME);
+        if (file.exists()) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                String word;
+                while ((word = reader.readLine()) != null) {
+                    wordList.add(word);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

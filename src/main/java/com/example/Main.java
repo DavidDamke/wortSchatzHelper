@@ -12,12 +12,9 @@ public class Main {
        JPanel cardPanel = wha.getCardPanel(); 
        CardLayout cardLayout = wha.getCardLayout();
     
-
-
       new MainView(cardLayout,cardPanel); 
 
       new Settings(cardLayout,cardPanel); 
-;
      
     }
 

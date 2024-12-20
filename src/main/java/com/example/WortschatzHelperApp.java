@@ -26,7 +26,7 @@ public class WortschatzHelperApp {
         cardLayout = new CardLayout();
         cardPanel = new JPanel(cardLayout);
     }
-    public void finalizeUI() {
+    private  void finalizeUI() {
         frame.add(cardPanel);
         frame.setVisible(true);
     }

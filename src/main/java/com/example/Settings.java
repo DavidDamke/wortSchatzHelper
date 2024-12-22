@@ -2,15 +2,8 @@ package com.example;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
-import java.awt.event.ItemEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 
 import javax.swing.BoxLayout;
@@ -31,23 +24,29 @@ public class Settings {
     CardLayout cardLayout;
     JPanel cardPanel;
 
-    private ArrayList<JCheckBox> wordList = new ArrayList<>();
-    private final String FILE_NAME = "wortSchatz.txt";
+
+    FileWriterUtils fileWriterUtils = new FileWriterUtils();
 
     public Settings(CardLayout cardLayout, JPanel cardPanel) {
         this.cardLayout = cardLayout;
         this.cardPanel = cardPanel;
 
-        initSettings();
 
+        initSettings();
+        
         setUpButtons();
         setupButtonListeners();
+        
+        setupDelete();
+        
+        setUpSubmit();
+        setupSelectWords();
+        
+        setUpSelectAll();
 
-        setupThings();
+        fileWriterUtils.loadWordsFromFile(checkBoxPanel);
 
-        loadWordsFromFile();
-        addCheckboxesToPanel(); // Ensure checkboxes from file are added to the panel
-
+        
         addToCardPanel();
     }
     
@@ -59,24 +58,23 @@ public class Settings {
         checkBoxPanel.setLayout(new BoxLayout(checkBoxPanel, BoxLayout.Y_AXIS)); // Vertical layout for checkboxes
     }
 
-    private void setupThings() {
+    private void setUpSubmit() {
+
         textLabel = new JLabel("Words: ");
         JTextField textField = new JTextField(20);
 
         JButton submitButton = new JButton("ADD");
+
         submitButton.addActionListener((actionEvent) -> {
             if (!textField.getText().isEmpty()) {
-                JCheckBox newWord = new JCheckBox(textField.getText());
+                checkBoxPanel.add(new JCheckBox(textField.getText()));
+                updateCheckBoxes();
+                fileWriterUtils.saveWordsToFile(checkBoxPanel);
 
-                wordList.add(newWord);
-                checkBoxPanel.add(newWord); 
-                checkBoxPanel.revalidate(); 
-                checkBoxPanel.repaint();
-
-                saveWordsToFile();
                 textField.setText("");
             }
         });
+
         textField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -85,25 +83,82 @@ public class Settings {
                 }
             }
         });
-
-        JButton deleteButton = new JButton("Delete");
-
-        deleteButton.addActionListener((actionEvent) -> {
-
-            // Remove selected checkboxes from the list
-            wordList.removeIf(JCheckBox::isSelected);
-
-            updateCheckBoxes(); // Refresh the UI to reflect changes
-        });
-
-
-
-        inputPanel.add(deleteButton);
         inputPanel.add(textField);
         inputPanel.add(submitButton);
 
-        settings.add(inputPanel, BorderLayout.NORTH);
-        settings.add(checkBoxPanel, BorderLayout.CENTER); // Ensure checkboxes are in the center
+    }
+
+    private void setupSelectWords() {
+        JButton selectWords = new JButton("Select");
+        fileWriterUtils.removeAllFromSelectedFile();
+
+        ArrayList<String> selectedWordList = new ArrayList<>();
+        selectWords.addActionListener((actionEvent) -> {
+            System.out.println("In Selected listener");
+
+            for (int i = 0; i < checkBoxPanel.getComponentCount(); i++) {
+                if (checkBoxPanel.getComponent(i) instanceof JCheckBox) {
+                    JCheckBox checkBox = (JCheckBox) checkBoxPanel.getComponent(i);
+
+                    if (checkBox.isSelected()) {
+                        selectedWordList.add(checkBox.getText());
+                    }
+                }
+            }
+            fileWriterUtils.saveWordsToFile(selectedWordList);
+            selectedWordList.clear();
+        });
+
+        inputPanel.add(selectWords);
+    }
+
+    private void setupDelete() {
+
+        JButton deleteButton = new JButton("Delete");
+        deleteButton.addActionListener((actionEvent) -> {
+            for (int i = 0; i < checkBoxPanel.getComponentCount(); i++) {
+                if (checkBoxPanel.getComponent(i) instanceof JCheckBox) {
+                    JCheckBox checkBox = (JCheckBox) checkBoxPanel.getComponent(i);
+
+                    String FILE_NAME = "wortSchatz.txt";
+                    String FILE_NAME_SELECTED = "selectedWortSchatz.txt";
+                    if (checkBox.isSelected()) {
+                        checkBoxPanel.remove(i);
+                        fileWriterUtils.removeWordFromFile(checkBox.getText(), checkBoxPanel, FILE_NAME);
+                        fileWriterUtils.removeWordFromFile(checkBox.getText(), checkBoxPanel, FILE_NAME_SELECTED);
+                    }
+                }
+            }
+            updateCheckBoxes(); // Refresh the UI to reflect changes
+        });
+
+        inputPanel.add(deleteButton);
+
+    }
+    
+    private void setUpSelectAll() {
+        JButton selectAll = new JButton("All");
+        
+        selectAll.addActionListener(actionEvent -> {
+            
+            for (int i = 0; i < checkBoxPanel.getComponentCount(); i++) {
+                if (checkBoxPanel.getComponent(i) instanceof JCheckBox) {
+                    JCheckBox checkBox = (JCheckBox) checkBoxPanel.getComponent(i);
+                    if (selectAll.getText().equals("All")) {
+                        checkBox.setSelected(true);
+                    } else {
+                        checkBox.setSelected(false);
+                    }
+                    
+                }
+            }
+            if (selectAll.getText().equals("All")) {
+                selectAll.setText("None");
+            } else {
+                selectAll.setText("All");
+            }
+        });
+        inputPanel.add(selectAll);
     }
 
 
@@ -116,57 +171,17 @@ public class Settings {
     private void setupButtonListeners() {
         settingsButton.addActionListener((actionEvent) -> cardLayout.show(cardPanel, "FirstPage"));
         navigationPanel.add(settingsButton);
-
         settings.add(navigationPanel, BorderLayout.SOUTH);
     }
 
     private void addToCardPanel() {
+        settings.add(inputPanel, BorderLayout.NORTH);
+        settings.add(checkBoxPanel, BorderLayout.CENTER); // Ensure checkboxes are in the center
         cardPanel.add(settings, "SecondPage");
     }
 
-    private void addCheckboxesToPanel() {
-        // Add all checkboxes from the wordList to the checkBoxPanel
-        for (JCheckBox checkBox : wordList) {
-            checkBoxPanel.add(checkBox);
-            checkBox.addItemListener(e -> {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    System.out.println(checkBox.getText() + " is selected");
-                } else if (e.getStateChange() == ItemEvent.DESELECTED) {
-                    System.out.println(checkBox.getText() + " is deselected");
-                }
-            });
-        }
+    private void updateCheckBoxes() {
         checkBoxPanel.revalidate(); // Refresh the UI
         checkBoxPanel.repaint();
-    }
-    private void updateCheckBoxes(){
-        for (JCheckBox checkBox : wordList) {
-            checkBoxPanel.add(checkBox);
-        }
-    }
-
-    private void saveWordsToFile() {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME))) {
-            for (JCheckBox word : wordList) {
-                writer.write(word.getText());
-                writer.newLine();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void loadWordsFromFile() {
-        File file = new File(FILE_NAME);
-        if (file.exists()) {
-            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                String word;
-                while ((word = reader.readLine()) != null) {
-                    wordList.add(new JCheckBox(word));
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
     }
 }

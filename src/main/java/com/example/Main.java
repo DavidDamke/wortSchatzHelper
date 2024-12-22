@@ -14,7 +14,7 @@ public class Main {
     
       new MainView(cardLayout,cardPanel); 
 
-      new Settings(cardLayout,cardPanel); 
+      new Settings(cardLayout, cardPanel);
      
     }
 

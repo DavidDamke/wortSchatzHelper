@@ -81,25 +81,12 @@ public class MainView {
     }
 
     private String getRandomWord() {
-        loadWordsFromFile();
+        wordList = new FileWriterUtils().loadSelectedWordsListFromFile();
         if (wordList.isEmpty()) {
-            return "No Words Available";
+            return "Keine Wörter verfügbar";
         }
         Random random = new Random();
         return wordList.get(random.nextInt(wordList.size()));
     }
 
-    private void loadWordsFromFile() {
-        File file = new File(FILE_NAME);
-        if (file.exists()) {
-            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-                String word;
-                while ((word = reader.readLine()) != null) {
-                    wordList.add(word);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 }

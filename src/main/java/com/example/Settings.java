@@ -13,6 +13,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 public class Settings {
     JPanel settings;
     JPanel navigationPanel;
@@ -43,9 +46,7 @@ public class Settings {
         setupSelectWords();
         
         setUpSelectAll();
-
-        fileWriterUtils.loadWordsFromFile(checkBoxPanel);
-
+        initSetupCheckBoxes();
         
         addToCardPanel();
     }
@@ -58,6 +59,19 @@ public class Settings {
         checkBoxPanel.setLayout(new BoxLayout(checkBoxPanel, BoxLayout.Y_AXIS)); // Vertical layout for checkboxes
     }
 
+    private void initSetupCheckBoxes(){
+        JSONArray wordsArray = fileWriterUtils.getWords();
+
+        for(int i =0; i<wordsArray.length(); i++){
+            JSONObject word= wordsArray.getJSONObject(i);
+
+            JCheckBox checkBox = new JCheckBox(word.getString("Name")); 
+            checkBox.setSelected(word.getBoolean("isSelected"));
+
+            checkBoxPanel.add(checkBox);
+        }
+    }
+
     private void setUpSubmit() {
 
         textLabel = new JLabel("Words: ");
@@ -67,10 +81,12 @@ public class Settings {
 
         submitButton.addActionListener((actionEvent) -> {
             if (!textField.getText().isEmpty()) {
-                checkBoxPanel.add(new JCheckBox(textField.getText()));
-                updateCheckBoxes();
-                fileWriterUtils.saveWordsToFile(checkBoxPanel);
+            
+                JCheckBox checkBox = new JCheckBox(textField.getText());
+                checkBoxPanel.add(checkBox);
 
+                updateCheckBoxes();                
+                fileWriterUtils.saveWordandValue(checkBox.getText(), checkBox.isSelected());    
                 textField.setText("");
             }
         });
@@ -90,22 +106,18 @@ public class Settings {
 
     private void setupSelectWords() {
         JButton selectWords = new JButton("Select");
-        fileWriterUtils.removeAllFromSelectedFile();
 
         ArrayList<String> selectedWordList = new ArrayList<>();
         selectWords.addActionListener((actionEvent) -> {
-            System.out.println("In Selected listener");
 
             for (int i = 0; i < checkBoxPanel.getComponentCount(); i++) {
                 if (checkBoxPanel.getComponent(i) instanceof JCheckBox) {
                     JCheckBox checkBox = (JCheckBox) checkBoxPanel.getComponent(i);
 
-                    if (checkBox.isSelected()) {
-                        selectedWordList.add(checkBox.getText());
-                    }
+                    fileWriterUtils.updateWordValue(checkBox.getText(), checkBox.isSelected());
+                
                 }
             }
-            fileWriterUtils.saveWordsToFile(selectedWordList);
             selectedWordList.clear();
         });
 
@@ -120,16 +132,14 @@ public class Settings {
                 if (checkBoxPanel.getComponent(i) instanceof JCheckBox) {
                     JCheckBox checkBox = (JCheckBox) checkBoxPanel.getComponent(i);
 
-                    String FILE_NAME = "wortSchatz.txt";
-                    String FILE_NAME_SELECTED = "selectedWortSchatz.txt";
                     if (checkBox.isSelected()) {
                         checkBoxPanel.remove(i);
-                        fileWriterUtils.removeWordFromFile(checkBox.getText(), checkBoxPanel, FILE_NAME);
-                        fileWriterUtils.removeWordFromFile(checkBox.getText(), checkBoxPanel, FILE_NAME_SELECTED);
+                        fileWriterUtils.deleteWord(checkBox.getText());
+
                     }
                 }
             }
-            updateCheckBoxes(); // Refresh the UI to reflect changes
+            updateCheckBoxes();
         });
 
         inputPanel.add(deleteButton);

@@ -14,6 +14,8 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import org.json.JSONArray;
+
 public class MainView {
     JPanel mainView;
     JLabel textLabel;
@@ -25,7 +27,6 @@ public class MainView {
     CardLayout cardLayout; 
 
     private ArrayList<String> wordList = new ArrayList<>();
-    private final String FILE_NAME = "wortSchatz.txt";
 
 
     public MainView(CardLayout cardLayout,JPanel cardPanel){
@@ -81,7 +82,8 @@ public class MainView {
     }
 
     private String getRandomWord() {
-        wordList = new FileWriterUtils().loadSelectedWordsListFromFile();
+        wordList = new FileWriterUtils().getSelectedWords();
+
         if (wordList.isEmpty()) {
             return "Keine Wörter verfügbar";
         }

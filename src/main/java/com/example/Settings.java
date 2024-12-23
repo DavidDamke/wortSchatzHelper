@@ -2,6 +2,7 @@ package com.example;
 
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
@@ -27,30 +28,28 @@ public class Settings {
     CardLayout cardLayout;
     JPanel cardPanel;
 
-
     FileWriterUtils fileWriterUtils = new FileWriterUtils();
 
     public Settings(CardLayout cardLayout, JPanel cardPanel) {
         this.cardLayout = cardLayout;
         this.cardPanel = cardPanel;
 
-
         initSettings();
-        
+
         setUpButtons();
         setupButtonListeners();
-        
+
         setupDelete();
-        
+
         setUpSubmit();
         setupSelectWords();
-        
+
         setUpSelectAll();
         initSetupCheckBoxes();
-        
+
         addToCardPanel();
     }
-    
+
     private void initSettings() {
         settings = new JPanel();
         settings.setLayout(new BorderLayout()); // Set layout for proper placement
@@ -59,13 +58,13 @@ public class Settings {
         checkBoxPanel.setLayout(new BoxLayout(checkBoxPanel, BoxLayout.Y_AXIS)); // Vertical layout for checkboxes
     }
 
-    private void initSetupCheckBoxes(){
+    private void initSetupCheckBoxes() {
         JSONArray wordsArray = fileWriterUtils.getWords();
 
-        for(int i =0; i<wordsArray.length(); i++){
-            JSONObject word= wordsArray.getJSONObject(i);
+        for (int i = 0; i < wordsArray.length(); i++) {
+            JSONObject word = wordsArray.getJSONObject(i);
 
-            JCheckBox checkBox = new JCheckBox(word.getString("Name")); 
+            JCheckBox checkBox = new JCheckBox(word.getString("Name"));
             checkBox.setSelected(word.getBoolean("isSelected"));
 
             checkBoxPanel.add(checkBox);
@@ -81,12 +80,12 @@ public class Settings {
 
         submitButton.addActionListener((actionEvent) -> {
             if (!textField.getText().isEmpty()) {
-            
+
                 JCheckBox checkBox = new JCheckBox(textField.getText());
                 checkBoxPanel.add(checkBox);
 
-                updateCheckBoxes();                
-                fileWriterUtils.saveWordandValue(checkBox.getText(), checkBox.isSelected());    
+                updateCheckBoxes();
+                fileWriterUtils.saveWordandValue(checkBox.getText(), checkBox.isSelected());
                 textField.setText("");
             }
         });
@@ -115,7 +114,7 @@ public class Settings {
                     JCheckBox checkBox = (JCheckBox) checkBoxPanel.getComponent(i);
 
                     fileWriterUtils.updateWordValue(checkBox.getText(), checkBox.isSelected());
-                
+
                 }
             }
             selectedWordList.clear();
@@ -127,6 +126,9 @@ public class Settings {
     private void setupDelete() {
 
         JButton deleteButton = new JButton("Delete");
+        deleteButton.setBackground(Color.RED);
+        deleteButton.setForeground(Color.WHITE);
+
         deleteButton.addActionListener((actionEvent) -> {
             for (int i = 0; i < checkBoxPanel.getComponentCount(); i++) {
                 if (checkBoxPanel.getComponent(i) instanceof JCheckBox) {
@@ -145,12 +147,12 @@ public class Settings {
         inputPanel.add(deleteButton);
 
     }
-    
+
     private void setUpSelectAll() {
         JButton selectAll = new JButton("All");
-        
+
         selectAll.addActionListener(actionEvent -> {
-            
+
             for (int i = 0; i < checkBoxPanel.getComponentCount(); i++) {
                 if (checkBoxPanel.getComponent(i) instanceof JCheckBox) {
                     JCheckBox checkBox = (JCheckBox) checkBoxPanel.getComponent(i);
@@ -159,7 +161,7 @@ public class Settings {
                     } else {
                         checkBox.setSelected(false);
                     }
-                    
+
                 }
             }
             if (selectAll.getText().equals("All")) {
@@ -170,7 +172,6 @@ public class Settings {
         });
         inputPanel.add(selectAll);
     }
-
 
     private void setUpButtons() {
         navigationPanel = new JPanel();

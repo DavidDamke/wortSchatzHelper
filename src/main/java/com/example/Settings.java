@@ -3,6 +3,8 @@ package com.example;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.KeyAdapter;
@@ -38,16 +40,14 @@ public class Settings {
     FileWriterUtils fileWriterUtils = new FileWriterUtils();
 
      DefaultListModel<String> lowPriorityModel;
-        DefaultListModel<String> mediumPriorityModel;
-        DefaultListModel<String> highPriorityModel;
+     DefaultListModel<String> mediumPriorityModel;
+     DefaultListModel<String> highPriorityModel;
 
     public Settings(CardLayout cardLayout, JPanel cardPanel) {
         this.cardLayout = cardLayout;
         this.cardPanel = cardPanel;
 
         initSettings();
-
-        
 
         setNavigation();
 
@@ -73,6 +73,7 @@ public class Settings {
         JSONArray wordsArray = fileWriterUtils.getWords();
         JScrollPane checkBoxJScrollPanel = new JScrollPane(checkBoxPanel);
         checkBoxJScrollPanel.setBorder(BorderFactory.createTitledBorder("Wörter"));
+        checkBoxJScrollPanel.setPreferredSize(new Dimension(200,400));
 
         for (int i = 0; i < wordsArray.length(); i++) {
             JSONObject word = wordsArray.getJSONObject(i);
@@ -91,21 +92,45 @@ public class Settings {
         mediumPriorityModel = new DefaultListModel<>();
         highPriorityModel = new DefaultListModel<>();
 
-        JScrollPane lowPriorityScrollPane = createPriorityScrollPane("Low Priority", lowPriorityModel);
-        JScrollPane mediumPriorityScrollPane = createPriorityScrollPane("Medium Priority", mediumPriorityModel);
-        JScrollPane highPriorityScrollPane = createPriorityScrollPane("High Priority", highPriorityModel);
+        JSONArray wordsArray = fileWriterUtils.getWords();
 
-        prioPanel.add(lowPriorityScrollPane);
-        prioPanel.add(mediumPriorityScrollPane);
+        for (int i = 0; i < wordsArray.length(); i++) {
+            JSONObject word = wordsArray.getJSONObject(i);
+            int prio = word.getInt("priority");
+            String name = word.getString("Name");
+            switch (prio) {
+                case 1:
+                    lowPriorityModel.addElement(name);;
+                    break;
+                case 2:
+                
+                mediumPriorityModel.addElement(name);;
+                break;
+                case 3:
+                
+                highPriorityModel.addElement(name);;
+                break;   
+                default:
+                    break;
+            }
+        }
+        
+
+        JScrollPane lowPriorityScrollPane = createPriorityScrollPane("Low Priority", lowPriorityModel,1);
+        JScrollPane mediumPriorityScrollPane = createPriorityScrollPane("Medium Priority", mediumPriorityModel,2);
+        JScrollPane highPriorityScrollPane = createPriorityScrollPane("High Priority", highPriorityModel,3);
+
         prioPanel.add(highPriorityScrollPane);
+        prioPanel.add(mediumPriorityScrollPane);
+        prioPanel.add(lowPriorityScrollPane);
         settings.add(prioPanel, BorderLayout.CENTER);
     }
 
-    private JScrollPane createPriorityScrollPane(String title, DefaultListModel<String> model) {
+    private JScrollPane createPriorityScrollPane(String title, DefaultListModel<String> model, int priority) {
         JList<String> list = new JList<>(model);
         list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         list.setDragEnabled(true);
-        list.setTransferHandler(new ListTransferHandler());
+        list.setTransferHandler(new ListTransferHandler(priority, fileWriterUtils));
         JScrollPane scrollPane = new JScrollPane(list);
         scrollPane.setBorder(BorderFactory.createTitledBorder(title));
         return scrollPane;
@@ -120,7 +145,6 @@ public class Settings {
         deleteButton.setBackground(Color.RED);
         deleteButton.setForeground(Color.WHITE);
 
-        JLabel textLabel = new JLabel("Words: ");
         JTextField textField = new JTextField(20);
         
         JButton submitButton = new JButton("ADD");
@@ -154,40 +178,57 @@ public class Settings {
     }
 
     private void delete() {
+        ArrayList<JCheckBox> toRemove = new ArrayList<>();
+        
         for (int i = 0; i < checkBoxPanel.getComponentCount(); i++) {
             if (checkBoxPanel.getComponent(i) instanceof JCheckBox) {
                 JCheckBox checkBox = (JCheckBox) checkBoxPanel.getComponent(i);
 
                 if (checkBox.isSelected()) {
-                    checkBoxPanel.remove(i);
+                    toRemove.add(checkBox);
                     fileWriterUtils.deleteWord(checkBox.getText());
-
                 }
             }
         }
+        for (JCheckBox checkBox : toRemove) {
+            checkBoxPanel.remove(checkBox);
+        }
+
         updateCheckBoxes();
     }
 
     private void submit(JTextField textField) {
-        if (!textField.getText().isEmpty()) {
+        if (!textField.getText().isEmpty() && !hasWord(textField.getText())) {
 
             JCheckBox checkBox = new JCheckBox(textField.getText());
             checkBoxPanel.add(checkBox);
 
             updateCheckBoxes();
-            fileWriterUtils.saveWordandValue(checkBox.getText(), checkBox.isSelected());
-            textField.setText("");
+            fileWriterUtils.saveWordandValue(checkBox.getText(), checkBox.isSelected(),0);
+            
         }
+        textField.setText("");
     }
 
+    private boolean hasWord(String name) {
+            for (Component checkBoxcomp : checkBoxPanel.getComponents()) {
+        JCheckBox box = (JCheckBox) checkBoxcomp;
+        if(box.getText().equals(name)){
+            return true;
+        }
+
+            }
+            return false;
+    }
     private void selectWords(ArrayList<String> selectedWordList) {
         for (int i = 0; i < checkBoxPanel.getComponentCount(); i++) {
             if (checkBoxPanel.getComponent(i) instanceof JCheckBox) {
                 JCheckBox checkBox = (JCheckBox) checkBoxPanel.getComponent(i);
 
-                fileWriterUtils.updateWordValue(checkBox.getText(), checkBox.isSelected());
+                
                 if (checkBox.isSelected() && !highPriorityModel.contains(checkBox.getText())) {
                     highPriorityModel.addElement(checkBox.getText());
+                    fileWriterUtils.updateWordValue(checkBox.getText(), checkBox.isSelected(),3);
                 } else if (!checkBox.isSelected()){
                     lowPriorityModel.removeElement(checkBox.getText());
                     highPriorityModel.removeElement(checkBox.getText());

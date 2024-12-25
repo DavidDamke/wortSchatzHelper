@@ -10,6 +10,13 @@ import javax.swing.JList;
 import javax.swing.TransferHandler;
 
 public class ListTransferHandler extends TransferHandler {
+        private int targetPriority; // Priority associated with the target list
+        private FileWriterUtils fileWriterUtils; // Utility to handle backend updates
+
+    public ListTransferHandler(int targetPriority, FileWriterUtils fileWriterUtils) {
+        this.targetPriority = targetPriority;
+        this.fileWriterUtils = fileWriterUtils;
+    }
       @Override
         protected Transferable createTransferable(JComponent c) {
             JList<?> list = (JList<?>) c;
@@ -47,6 +54,8 @@ public boolean importData(TransferSupport support) {
         }
 
         targetModel.add(index, data);
+        fileWriterUtils.updateWordPrio(data, targetPriority);
+
         return true;
     } catch (Exception e) {
         e.printStackTrace();

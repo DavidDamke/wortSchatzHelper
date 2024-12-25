@@ -28,15 +28,20 @@ public class FileWriterUtils {
         }
     
     
-        public void saveWordandValue(String name, boolean value) {
+        public void saveWordandValue(String name, boolean value, int priority) {
+            
+            if (!hasWord(name)) {
+    
+                JSONObject jSONObject = new JSONObject();
+    
+                jSONObject.put("Name", name);
+                jSONObject.put("isSelected", value);
+                jSONObject.put("priority", priority);
+    
+                jsonArray.put(jSONObject);
+                saveWordsToJSONFile();
+            }
 
-            JSONObject jSONObject = new JSONObject();
-
-            jSONObject.put("Name", name);
-            jSONObject.put("isSelected", value);
-
-            jsonArray.put(jSONObject);
-            saveWordsToJSONFile();
         }
 
         private void saveWordsToJSONFile() {
@@ -50,17 +55,40 @@ public class FileWriterUtils {
             }
         
     }
-        public boolean updateWordValue(String name, boolean newValue) {
+        public boolean updateWordValue(String name, boolean newValue, int newPriority) {
         for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject jsonObject = jsonArray.getJSONObject(i);
 
             if (jsonObject.getString("Name").equals(name)) {
                 jsonObject.put("isSelected", newValue); // Update the value
+                jsonObject.put("priority", newPriority); // Update the value
                 saveWordsToJSONFile(); // Save changes to file
                 return true; // Update was successful
             }
         }
         return false; // Word not found
+    }
+        public boolean updateWordPrio(String name, int newPriority) {
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject jsonObject = jsonArray.getJSONObject(i);
+            if (jsonObject.getString("Name").equals(name)) {
+                jsonObject.put("priority", newPriority); // Update the value
+                saveWordsToJSONFile(); // Save changes to file
+                return true; // Update was successful
+            }
+        }
+        return false; // Word not found
+    }
+        public boolean hasWord(String name) {
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject jsonObject = jsonArray.getJSONObject(i);
+
+            if (jsonObject.getString("Name").equals(name)) {
+                return true; 
+            }
+            
+        }
+        return false;
     }
     
     public boolean deleteWord(String name) {

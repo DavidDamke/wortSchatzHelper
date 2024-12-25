@@ -11,16 +11,18 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import org.json.JSONObject;
+
 
 public class MainView {
     JPanel mainView;
     JLabel textLabel;
     JPanel buttonPanel;
-    JButton mainViewButton;
-    JButton nextWordButton;
-
+   
     JPanel cardPanel;
-    CardLayout cardLayout; 
+    CardLayout cardLayout;
+
+    FileWriterUtils fileWriterUtils = new FileWriterUtils();
 
     private ArrayList<String> wordList = new ArrayList<>();
 
@@ -35,8 +37,6 @@ public class MainView {
                 displayWord();
                 // Panel for buttons
                 setUpButtons();
-                // Add mainView to the card panel
-                setupButtonListeners();
                 addToCardPanel();
             }
 
@@ -45,26 +45,50 @@ public class MainView {
         buttonPanel = new JPanel();
 
         // Button to switch to settings
-        mainViewButton = new JButton("Settings");
+        JButton mainViewButton = new JButton("Settings");
        // FontIcon settingsIcon = FontIcon.of(MaterialDesignC.COG, 16, Color.BLACK);
 
         //mainViewButton.setIcon(settingsIcon);
-        nextWordButton = new JButton("Next");
+       // JButton nextWordButton = new JButton("Next");
 
-    }
-    
-    private void setupButtonListeners(){
-      
+        JButton gutButton = new JButton("GUT");
+        JButton schlechtButton = new JButton("SCHLECHT");
+
+       
+        gutButton.addActionListener(actionEvent -> {
+            int prio = fileWriterUtils.getPriority(textLabel.getText());
+
+            if (prio == 3 || prio == 2) {
+                fileWriterUtils.updateWordPrio(textLabel.getText(), prio -=1);  
+            }
+         
+            textLabel.setText(getRandomWord());
+        });
+        schlechtButton.addActionListener(actionEvent -> {
+            int prio = fileWriterUtils.getPriority(textLabel.getText());
+
+            if (prio <3) {
+                fileWriterUtils.updateWordPrio(textLabel.getText(), prio += 1);
+                
+            }
+          
+            textLabel.setText(getRandomWord());
+        });
+        
         mainViewButton.addActionListener((actionEvent) -> cardLayout.show(cardPanel, "SecondPage"));
-        buttonPanel.add(mainViewButton);
-
+        
         // Button to get the next word
-        nextWordButton.addActionListener((actionEvent) -> textLabel.setText(getRandomWord()));
-        buttonPanel.add(nextWordButton);
+       // nextWordButton.addActionListener((actionEvent) -> textLabel.setText(getRandomWord()));
+
+        buttonPanel.add(mainViewButton);
+        //buttonPanel.add(nextWordButton);
+        buttonPanel.add(gutButton);
+        buttonPanel.add(schlechtButton);
 
         mainView.add(buttonPanel, BorderLayout.SOUTH); // Add button panel to the bottom
 
     }
+    
     
     private void initMainView(){
         mainView = new JPanel();
@@ -80,14 +104,34 @@ public class MainView {
         cardPanel.add(mainView, "FirstPage");
     }
 
-    private String getRandomWord() {
-        wordList = new FileWriterUtils().getSelectedWords();
+   private String getRandomWord() {
+    wordList = new FileWriterUtils().getSelectedWords();
+    
 
-        if (wordList.isEmpty()) {
-            return "Keine Wörter verfügbar";
-        }
-        Random random = new Random();
-        return wordList.get(random.nextInt(wordList.size()));
+    System.out.println(wordList);
+    if (wordList.isEmpty()) {
+        return "Keine Wörter verfügbar";
     }
+    System.out.println("After");
+
+    // Create a weighted list based on priorities
+    ArrayList<String> weightedWords = new ArrayList<>();
+
+    for (String word : wordList) {
+        int priority = fileWriterUtils.getPriority(word);
+
+        System.out.println(priority);
+        // Add the word to the weighted list based on its priority
+        for (int i = 0; i < priority; i++) {
+            weightedWords.add(word);
+        }
+    }
+    if (!weightedWords.isEmpty()) {
+        Random random = new Random();
+        return weightedWords.get(random.nextInt(weightedWords.size()));
+    }
+    return "Keine Wörter verfügbar";
+    // Select a random word from the weighted list
+}
 
 }

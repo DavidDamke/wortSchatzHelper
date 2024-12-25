@@ -79,16 +79,28 @@ public class FileWriterUtils {
         }
         return false; // Word not found
     }
-        public boolean hasWord(String name) {
+
+    public boolean hasWord(String name) {
         for (int i = 0; i < jsonArray.length(); i++) {
             JSONObject jsonObject = jsonArray.getJSONObject(i);
 
             if (jsonObject.getString("Name").equals(name)) {
-                return true; 
+                return true;
             }
-            
+
         }
         return false;
+    }
+
+    public int getPriority(String name) {
+        jsonArray = getWords();
+         for (int i = 0; i < jsonArray.length(); i++) {
+            JSONObject jsonObject = jsonArray.getJSONObject(i);
+            if (jsonObject.getString("Name").equals(name)) {
+                return jsonObject.getInt("priority");
+            }
+        }
+        return 0; // Word not found
     }
     
     public boolean deleteWord(String name) {

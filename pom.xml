@@ -24,6 +24,21 @@
     <artifactId>flatlaf</artifactId>
     <version>3.0</version>
 </dependency>
+    <dependency>
+        <groupId>org.kordamp.ikonli</groupId>
+        <artifactId>ikonli-swing</artifactId>
+        <version>12.3.0</version> <!-- Replace with the latest version -->
+    </dependency>
+    <dependency>
+        <groupId>org.kordamp.ikonli</groupId>
+        <artifactId>ikonli-fontawesome5-pack</artifactId> <!-- FontAwesome icons -->
+        <version>12.3.0</version>
+    </dependency>
+    <dependency>
+        <groupId>org.kordamp.ikonli</groupId>
+        <artifactId>ikonli-materialdesign2-pack</artifactId> <!-- Material Design icons -->
+        <version>12.3.0</version>
+    </dependency>
 
     </dependencies>
 

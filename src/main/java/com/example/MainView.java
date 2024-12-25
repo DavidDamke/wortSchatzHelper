@@ -3,10 +3,7 @@ package com.example;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Font;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -14,7 +11,6 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-import org.json.JSONArray;
 
 public class MainView {
     JPanel mainView;
@@ -49,7 +45,10 @@ public class MainView {
         buttonPanel = new JPanel();
 
         // Button to switch to settings
-        mainViewButton = new JButton("Go to Settings");
+        mainViewButton = new JButton("Settings");
+       // FontIcon settingsIcon = FontIcon.of(MaterialDesignC.COG, 16, Color.BLACK);
+
+        //mainViewButton.setIcon(settingsIcon);
         nextWordButton = new JButton("Next");
 
     }

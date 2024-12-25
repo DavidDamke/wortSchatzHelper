@@ -3,16 +3,23 @@ package com.example;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -21,14 +28,18 @@ public class Settings {
     JPanel settings;
     JPanel navigationPanel;
     JButton settingsButton;
-    JPanel inputPanel;
-    JLabel textLabel;
     JPanel checkBoxPanel;
 
+
+    JPanel toolBar;
     CardLayout cardLayout;
     JPanel cardPanel;
 
     FileWriterUtils fileWriterUtils = new FileWriterUtils();
+
+     DefaultListModel<String> lowPriorityModel;
+        DefaultListModel<String> mediumPriorityModel;
+        DefaultListModel<String> highPriorityModel;
 
     public Settings(CardLayout cardLayout, JPanel cardPanel) {
         this.cardLayout = cardLayout;
@@ -36,30 +47,32 @@ public class Settings {
 
         initSettings();
 
-        setUpButtons();
-        setupButtonListeners();
+        
 
-        setupDelete();
+        setNavigation();
 
-        setUpSubmit();
-        setupSelectWords();
+        setUpToolBar();
 
-        setUpSelectAll();
+       
+
         initSetupCheckBoxes();
 
+
+        setUpPriorityLists();
         addToCardPanel();
     }
 
     private void initSettings() {
         settings = new JPanel();
         settings.setLayout(new BorderLayout()); // Set layout for proper placement
-        inputPanel = new JPanel();
         checkBoxPanel = new JPanel();
         checkBoxPanel.setLayout(new BoxLayout(checkBoxPanel, BoxLayout.Y_AXIS)); // Vertical layout for checkboxes
     }
 
     private void initSetupCheckBoxes() {
         JSONArray wordsArray = fileWriterUtils.getWords();
+        JScrollPane checkBoxJScrollPanel = new JScrollPane(checkBoxPanel);
+        checkBoxJScrollPanel.setBorder(BorderFactory.createTitledBorder("Wörter"));
 
         for (int i = 0; i < wordsArray.length(); i++) {
             JSONObject word = wordsArray.getJSONObject(i);
@@ -69,27 +82,59 @@ public class Settings {
 
             checkBoxPanel.add(checkBox);
         }
+        settings.add(checkBoxJScrollPanel, BorderLayout.WEST);
     }
 
-    private void setUpSubmit() {
+    private void setUpPriorityLists() {
+        JPanel prioPanel = new JPanel(new GridLayout(1, 3, 10, 10));
+        lowPriorityModel = new DefaultListModel<>();
+        mediumPriorityModel = new DefaultListModel<>();
+        highPriorityModel = new DefaultListModel<>();
 
-        textLabel = new JLabel("Words: ");
+        JScrollPane lowPriorityScrollPane = createPriorityScrollPane("Low Priority", lowPriorityModel);
+        JScrollPane mediumPriorityScrollPane = createPriorityScrollPane("Medium Priority", mediumPriorityModel);
+        JScrollPane highPriorityScrollPane = createPriorityScrollPane("High Priority", highPriorityModel);
+
+        prioPanel.add(lowPriorityScrollPane);
+        prioPanel.add(mediumPriorityScrollPane);
+        prioPanel.add(highPriorityScrollPane);
+        settings.add(prioPanel, BorderLayout.CENTER);
+    }
+
+    private JScrollPane createPriorityScrollPane(String title, DefaultListModel<String> model) {
+        JList<String> list = new JList<>(model);
+        list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        list.setDragEnabled(true);
+        list.setTransferHandler(new ListTransferHandler());
+        JScrollPane scrollPane = new JScrollPane(list);
+        scrollPane.setBorder(BorderFactory.createTitledBorder(title));
+        return scrollPane;
+    }
+    
+    private void setUpToolBar() {
+        toolBar = new JPanel();
+        toolBar.setLayout(new FlowLayout(FlowLayout.LEFT));
+        
+          
+        JButton deleteButton = new JButton("Delete");
+        deleteButton.setBackground(Color.RED);
+        deleteButton.setForeground(Color.WHITE);
+
+        JLabel textLabel = new JLabel("Words: ");
         JTextField textField = new JTextField(20);
-
+        
         JButton submitButton = new JButton("ADD");
+        
+        JButton selectWords = new JButton("Select");
+        JButton selectAll = new JButton("All");
+        
+        ArrayList<String> selectedWordList = new ArrayList<>();
 
-        submitButton.addActionListener((actionEvent) -> {
-            if (!textField.getText().isEmpty()) {
-
-                JCheckBox checkBox = new JCheckBox(textField.getText());
-                checkBoxPanel.add(checkBox);
-
-                updateCheckBoxes();
-                fileWriterUtils.saveWordandValue(checkBox.getText(), checkBox.isSelected());
-                textField.setText("");
-            }
-        });
-
+        deleteButton.addActionListener((actionEvent) -> delete());
+        submitButton.addActionListener((actionEvent) -> submit(textField)); 
+        selectWords.addActionListener((actionEvent) -> selectWords(selectedWordList));
+        selectAll.addActionListener(actionEvent -> selectAll(selectAll));
+        
         textField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -98,96 +143,94 @@ public class Settings {
                 }
             }
         });
-        inputPanel.add(textField);
-        inputPanel.add(submitButton);
+
+        toolBar.add(deleteButton);
+        toolBar.add(textField);
+        toolBar.add(submitButton);
+        toolBar.add(selectWords);
+        toolBar.add(selectAll);
+        settings.add(toolBar,BorderLayout.NORTH);
 
     }
 
-    private void setupSelectWords() {
-        JButton selectWords = new JButton("Select");
+    private void delete() {
+        for (int i = 0; i < checkBoxPanel.getComponentCount(); i++) {
+            if (checkBoxPanel.getComponent(i) instanceof JCheckBox) {
+                JCheckBox checkBox = (JCheckBox) checkBoxPanel.getComponent(i);
 
-        ArrayList<String> selectedWordList = new ArrayList<>();
-        selectWords.addActionListener((actionEvent) -> {
-
-            for (int i = 0; i < checkBoxPanel.getComponentCount(); i++) {
-                if (checkBoxPanel.getComponent(i) instanceof JCheckBox) {
-                    JCheckBox checkBox = (JCheckBox) checkBoxPanel.getComponent(i);
-
-                    fileWriterUtils.updateWordValue(checkBox.getText(), checkBox.isSelected());
+                if (checkBox.isSelected()) {
+                    checkBoxPanel.remove(i);
+                    fileWriterUtils.deleteWord(checkBox.getText());
 
                 }
             }
-            selectedWordList.clear();
-        });
-
-        inputPanel.add(selectWords);
+        }
+        updateCheckBoxes();
     }
 
-    private void setupDelete() {
+    private void submit(JTextField textField) {
+        if (!textField.getText().isEmpty()) {
 
-        JButton deleteButton = new JButton("Delete");
-        deleteButton.setBackground(Color.RED);
-        deleteButton.setForeground(Color.WHITE);
+            JCheckBox checkBox = new JCheckBox(textField.getText());
+            checkBoxPanel.add(checkBox);
 
-        deleteButton.addActionListener((actionEvent) -> {
-            for (int i = 0; i < checkBoxPanel.getComponentCount(); i++) {
-                if (checkBoxPanel.getComponent(i) instanceof JCheckBox) {
-                    JCheckBox checkBox = (JCheckBox) checkBoxPanel.getComponent(i);
-
-                    if (checkBox.isSelected()) {
-                        checkBoxPanel.remove(i);
-                        fileWriterUtils.deleteWord(checkBox.getText());
-
-                    }
-                }
-            }
             updateCheckBoxes();
-        });
-
-        inputPanel.add(deleteButton);
-
+            fileWriterUtils.saveWordandValue(checkBox.getText(), checkBox.isSelected());
+            textField.setText("");
+        }
     }
 
-    private void setUpSelectAll() {
-        JButton selectAll = new JButton("All");
+    private void selectWords(ArrayList<String> selectedWordList) {
+        for (int i = 0; i < checkBoxPanel.getComponentCount(); i++) {
+            if (checkBoxPanel.getComponent(i) instanceof JCheckBox) {
+                JCheckBox checkBox = (JCheckBox) checkBoxPanel.getComponent(i);
 
-        selectAll.addActionListener(actionEvent -> {
-
-            for (int i = 0; i < checkBoxPanel.getComponentCount(); i++) {
-                if (checkBoxPanel.getComponent(i) instanceof JCheckBox) {
-                    JCheckBox checkBox = (JCheckBox) checkBoxPanel.getComponent(i);
-                    if (selectAll.getText().equals("All")) {
-                        checkBox.setSelected(true);
-                    } else {
-                        checkBox.setSelected(false);
-                    }
-
+                fileWriterUtils.updateWordValue(checkBox.getText(), checkBox.isSelected());
+                if (checkBox.isSelected() && !highPriorityModel.contains(checkBox.getText())) {
+                    highPriorityModel.addElement(checkBox.getText());
+                } else if (!checkBox.isSelected()){
+                    lowPriorityModel.removeElement(checkBox.getText());
+                    highPriorityModel.removeElement(checkBox.getText());
+                    mediumPriorityModel.removeElement(checkBox.getText());
                 }
+
             }
-            if (selectAll.getText().equals("All")) {
-                selectAll.setText("None");
-            } else {
-                selectAll.setText("All");
-            }
-        });
-        inputPanel.add(selectAll);
+        }
+        selectedWordList.clear();
     }
 
-    private void setUpButtons() {
+    private void selectAll(JButton selectAll) {
+        for (int i = 0; i < checkBoxPanel.getComponentCount(); i++) {
+            if (checkBoxPanel.getComponent(i) instanceof JCheckBox) {
+                JCheckBox checkBox = (JCheckBox) checkBoxPanel.getComponent(i);
+                if (selectAll.getText().equals("All")) {
+                    checkBox.setSelected(true);
+                } else {
+                    checkBox.setSelected(false);
+                }
+
+            }
+        }
+        if (selectAll.getText().equals("All")) {
+            selectAll.setText("None");
+        } else {
+            selectAll.setText("All");
+        }
+    }
+
+
+    private void setNavigation() {
         navigationPanel = new JPanel();
 
         settingsButton = new JButton("Go to MainView");
-    }
-
-    private void setupButtonListeners() {
         settingsButton.addActionListener((actionEvent) -> cardLayout.show(cardPanel, "FirstPage"));
         navigationPanel.add(settingsButton);
         settings.add(navigationPanel, BorderLayout.SOUTH);
     }
 
+
+
     private void addToCardPanel() {
-        settings.add(inputPanel, BorderLayout.NORTH);
-        settings.add(checkBoxPanel, BorderLayout.CENTER); // Ensure checkboxes are in the center
         cardPanel.add(settings, "SecondPage");
     }
 

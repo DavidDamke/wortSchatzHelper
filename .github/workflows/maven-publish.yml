@@ -28,6 +28,6 @@ jobs:
       uses: actions/upload-release-asset@v1
       with:
         upload_url: ${{ github.event.release.upload_url }}
-        asset_path: target/wotschatzhelper*.jar
-        asset_name: wotschatzhelper*.jar
+        asset_path: target/wortschatzhelper-1.0-SNAPSHOT.jar
+        asset_name: wortschatzhelper-1.0-SNAPSHOT.jar
         asset_content_type: application/java-archive

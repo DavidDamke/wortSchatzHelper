@@ -16,6 +16,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.formdev.flatlaf.json.Json;
+
 import netscape.javascript.JSObject;
 
 public class FileWriterUtils {
@@ -126,6 +128,17 @@ public class FileWriterUtils {
             }
         }
         return selectedWords;
+    }
+    public JSONArray getSelectedWordsASJSON() {
+        JSONArray selectedWordsArray = getWords();
+        //ArrayList<String> selectedWords = new ArrayList<>();
+        JSONArray newArray = new JSONArray();
+        for (int i = 0; i < selectedWordsArray.length(); i++) {
+            if (selectedWordsArray.getJSONObject(i).getBoolean("isSelected")) {
+                newArray.put(selectedWordsArray.getJSONObject(i));
+            }
+        }
+        return newArray;
     }
     
     

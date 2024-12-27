@@ -85,10 +85,13 @@ public class Settings {
     }
 
     private void refreshPriorityList() {
+        //TODO Darf nur Adden wenn die nicht Selected sind. 
+
         lowPriorityModel.clear();
         mediumPriorityModel.clear();
         highPriorityModel.clear();
         updatePriorityModels();
+        updateCheckBoxes();
         
     }
     private void setUpPriorityLists() {
@@ -111,13 +114,13 @@ public class Settings {
     }
 
     private void updatePriorityModels() {
-        JSONArray wordsArray = fileWriterUtils.getWords();
+        JSONArray wordsArray = fileWriterUtils.getSelectedWordsASJSON();
 
         for (int i = 0; i < wordsArray.length(); i++) {
             JSONObject word = wordsArray.getJSONObject(i);
             int prio = word.getInt("priority");
             String name = word.getString("Name");
-          
+            
             updateModels(name,prio);
         }
     }

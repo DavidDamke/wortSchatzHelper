@@ -1,6 +1,8 @@
 package com.example;
 
 import java.awt.CardLayout;
+import java.awt.Font;
+import java.awt.Insets;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -27,6 +29,8 @@ public class WortschatzHelperApp {
     private void initializeFrame() {
         try {
             UIManager.setLookAndFeel(new FlatIntelliJLaf());
+            UIManager.put("Button.font", new Font("SansSerif", Font.PLAIN, 14)); // Larger font
+            UIManager.put("Button.margin", new Insets(10, 20, 10, 20));
         } catch (UnsupportedLookAndFeelException e) {
             e.printStackTrace();
         }

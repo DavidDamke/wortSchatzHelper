@@ -1,12 +1,10 @@
 name: Build and Release JAR
 
 on:
-  # release:
-  #   types:
-  #     - created
-  push:
-    branches:
-      - main
+  release:
+    types:
+      - created
+
 
 jobs:
   build:

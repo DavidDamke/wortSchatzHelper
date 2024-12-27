@@ -41,5 +41,11 @@
     </dependency>
 
     </dependencies>
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <url>https://maven.pkg.github.com/DavidDamke/wortSchatzHelper</url>
+        </repository>
+    </distributionManagement>
 
 </project>

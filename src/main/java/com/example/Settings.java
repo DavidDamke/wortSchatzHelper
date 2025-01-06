@@ -21,7 +21,10 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
+import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -53,8 +56,8 @@ public class Settings {
 
          setUpToolBar();
 
-         initSetupCheckBoxes();
-
+         //initSetupCheckBoxes();
+         testTree();
          setUpPriorityLists();
          addToCardPanel();
      }
@@ -66,7 +69,30 @@ public class Settings {
         checkBoxPanel = new JPanel();
         checkBoxPanel.setLayout(new BoxLayout(checkBoxPanel, BoxLayout.Y_AXIS)); // Vertical layout for checkboxes
     }
+     private void testTree() {
+         DefaultMutableTreeNode root = new DefaultMutableTreeNode("Root");
+         DefaultMutableTreeNode folder1 = new DefaultMutableTreeNode("folder1");
+         folder1.add(new DefaultMutableTreeNode(new JCheckBox("Test").getText()));
 
+         DefaultMutableTreeNode folder2 = new DefaultMutableTreeNode("folder2");
+         DefaultMutableTreeNode folder3 = new DefaultMutableTreeNode("folder3");
+         root.add(folder1);
+         root.add(folder2);
+         root.add(folder3);
+         
+
+         DefaultTreeModel treeModel = new DefaultTreeModel(root);
+         JTree tree = new JTree(treeModel);
+         tree.setEditable(true);
+         tree.setRootVisible(false);
+
+         JPanel test = new JPanel(new BorderLayout());
+         test.setPreferredSize(new Dimension(200, 200));
+         test.add(new JScrollPane(tree));
+         settings.add(test,BorderLayout.WEST);
+        
+
+     }
     private void initSetupCheckBoxes() {
         JSONArray wordsArray = fileWriterUtils.getWords();
         JScrollPane checkBoxJScrollPanel = new JScrollPane(checkBoxPanel);

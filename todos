@@ -1,0 +1,72 @@
+Todo Lisa App: 
+
+
+DevOps: 
+	x GitHub Pipeline für Releases, damit es Gebaut/runtergeladen werden kann.
+
+Andere:
+	- Readme "Tutorial" wie man das Programm startet? (und wie man es dann nutzt?)
+	
+
+Funktionen: 
+	- Funktionen testen
+	
+
+Weiterführende Funktionen: 
+
+	- "Import" Funktion (Maybe)
+		- Es soll möglich sein eine Txt Datei zu Importieren damit die Wörter nicht alle einzeln eingegeben werden müssen.
+		
+
+
+
+	- Wörter Ordnen: 
+		- Mögichkeit Ordner für Wörter zu erstellen? So das Wörter in Kategorien unterteilt werden können. 
+	
+Todos: 
+	- Wörter müssen aus der Liste ausgewählt werden können. 
+	- Wörter müssen hinzugefügt und gelöscht werden können 
+	- Neue Ordner müssen angelegt werden können. 
+	- Für eine DS entscheiden
+		- Entsprechenden Funktionen anpassen
+		- Refacotring damit umsoweing Teile angepasst werden müssen. 
+	
+	- Anzeige machen. 
+		- Wie werden Checkboxen in der Liste angezeig? 
+		- Sind Checkboxen noch nötig? Kann vllt nur der Ordner gewählt werden (Sind denk ich schon möglich)
+
+	- Check Behaviour festlegen. 
+
+	- Drag und drop?
+		- Damit werden nicht direkt Checkboxen benötit, da man entweder den Ganzen Ordner auswählen kann der Per auswahl die Wörter hinzufügen kann. 
+		
+
+	- Neue Klasse für die Tree logik
+
+
+	Dafür neue DS: 
+
+	Entweder:
+
+	[{"isSelected":true,"priority":3,"Name":"SUper","Folder":"folder1"},{"isSelected":true,"priority":3,"Name":"Duper","Folder":folder2}]
+
+	Oder das:
+
+	{
+		"folders":[
+			{
+			"folderName": folder1,
+			"data":	[{"isSelected":true,"priority":3,"Name":"SUper"},{"isSelected":true,"priority":3,"Name":"Duper"}]
+			},
+			{
+			"folderName": folder2,
+			"data":	[{"isSelected":true,"priority":3,"Name":"SUper"},{"isSelected":true,"priority":3,"Name":"Duper"}]
+			},
+			{
+			"folderName": folder3,
+			"data":	[{"isSelected":true,"priority":3,"Name":"SUper"},{"isSelected":true,"priority":3,"Name":"Duper"}]
+			},
+
+		]
+		
+	}

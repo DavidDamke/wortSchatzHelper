@@ -3,80 +3,93 @@ package com.example;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
-import javax.swing.JList;
+import javax.swing.JTree;
 import javax.swing.TransferHandler;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 public class ListTransferHandler extends TransferHandler {
-        private int targetPriority; // Priority associated with the target list
-        private FileWriterUtils fileWriterUtils; // Utility to handle backend updates
+    private final int priority;
+    private final DefaultListModel<String> model;
+    private final FileWriterUtils fileWriterUtils;
 
-    public ListTransferHandler(int targetPriority, FileWriterUtils fileWriterUtils) {
-        this.targetPriority = targetPriority;
-        this.fileWriterUtils = fileWriterUtils;
-    }
-      @Override
-        protected Transferable createTransferable(JComponent c) {
-            JList<?> list = (JList<?>) c;
-            Object value = list.getSelectedValue();
-            return new StringSelection(value.toString());
-        }
-
-        @Override
-        public int getSourceActions(JComponent c) {
-            return COPY_OR_MOVE;
-        }
-
-        @Override
-        public boolean canImport(TransferSupport support) {
-            return support.isDataFlavorSupported(DataFlavor.stringFlavor);
-        }
-
-@Override
-public boolean importData(TransferSupport support) {
-    if (!canImport(support)) {
-        return false;
+    public ListTransferHandler(int priority, DefaultListModel<String> model) {
+        this.priority = priority;
+        this.model = model;
+        this.fileWriterUtils = new FileWriterUtils();
     }
 
-    try {
-        JList.DropLocation dropLocation = (JList.DropLocation) support.getDropLocation();
-        int index = dropLocation.getIndex();
-        JList<?> targetList = (JList<?>) support.getComponent();
-        DefaultListModel<String> targetModel = (DefaultListModel<String>) targetList.getModel();
+    @Override
+    public boolean canImport(TransferSupport support) {
+        // Allow only string data to be imported
+        return support.isDataFlavorSupported(DataFlavor.stringFlavor);
+    }
 
-        String data = (String) support.getTransferable().getTransferData(DataFlavor.stringFlavor);
-
-        // If index is -1, add to the end of the list
-        if (index < 0) {
-            index = targetModel.getSize();
+    @Override
+    public boolean importData(TransferSupport support) {
+        if (!canImport(support)) {
+            return false;
         }
 
-        targetModel.add(index, data);
-        fileWriterUtils.updateWordPrio(data, targetPriority);
+        try {
+            // Extract the string data from the drag-and-drop operation
+            String data = (String) support.getTransferable().getTransferData(DataFlavor.stringFlavor);
 
-        return true;
-    } catch (Exception e) {
-        e.printStackTrace();
-        return false;
-    }
-}
+            // Split the data into multiple items if it contains folder contents (comma-separated)
+            String[] items = data.split(",");
 
+            for (String item : items) {
+                String trimmedItem = item.trim();
 
-        @Override
-        protected void exportDone(JComponent source, Transferable data, int action) {
-            if (action == MOVE) {
-                JList<?> sourceList = (JList<?>) source;
-                DefaultListModel<?> sourceModel = (DefaultListModel<?>) sourceList.getModel();
-                String movedData;
-                try {
-                    movedData = (String) data.getTransferData(DataFlavor.stringFlavor);
-                    sourceModel.removeElement(movedData);
-                } catch (Exception e) {
-                    e.printStackTrace();
+                // Avoid duplicates
+                if (!model.contains(trimmedItem)) {
+                    model.addElement(trimmedItem);
+                    fileWriterUtils.updateWordValue(trimmedItem, true, priority); // Update persistence
                 }
             }
+
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
+        return false;
+    }
+
+    @Override
+    protected Transferable createTransferable(JComponent c) {
+        if (c instanceof JTree) {
+            // Handle drag from JTree
+            JTree tree = (JTree) c;
+            DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) tree.getLastSelectedPathComponent();
+            if (selectedNode != null) {
+                // Gather all leaf nodes if the selected node is a folder
+                List<String> items = new ArrayList<>();
+                gatherNodeContents(selectedNode, items);
+                return new StringSelection(String.join(",", items));
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public int getSourceActions(JComponent c) {
+        return COPY_OR_MOVE; // Support both copy and move actions
+    }
+
+    private void gatherNodeContents(DefaultMutableTreeNode node, List<String> items) {
+        if (node.isLeaf()) {
+            items.add(node.getUserObject().toString());
+        } else {
+            // If it's a folder, gather all children recursively
+            for (int i = 0; i < node.getChildCount(); i++) {
+                gatherNodeContents((DefaultMutableTreeNode) node.getChildAt(i), items);
+            }
+        }
+    }
     }
 

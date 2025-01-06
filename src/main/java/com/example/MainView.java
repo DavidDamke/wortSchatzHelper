@@ -3,15 +3,12 @@ package com.example;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Font;
-
 import java.util.ArrayList;
 import java.util.Random;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-
-import org.json.JSONObject;
 
 
 public class MainView {
@@ -33,9 +30,7 @@ public class MainView {
 
                 initMainView();
 
-                // Main label displaying the word
                 displayWord();
-                // Panel for buttons
                 setUpButtons();
                 addToCardPanel();
             }
@@ -49,7 +44,7 @@ public class MainView {
        // FontIcon settingsIcon = FontIcon.of(MaterialDesignC.COG, 16, Color.BLACK);
 
         //mainViewButton.setIcon(settingsIcon);
-       // JButton nextWordButton = new JButton("Next");
+        JButton nextWordButton = new JButton("Next");
 
         JButton gutButton = new JButton("GUT");
         JButton schlechtButton = new JButton("SCHLECHT");
@@ -78,10 +73,10 @@ public class MainView {
         mainViewButton.addActionListener((actionEvent) -> cardLayout.show(cardPanel, "SecondPage"));
         
         // Button to get the next word
-       // nextWordButton.addActionListener((actionEvent) -> textLabel.setText(getRandomWord()));
+        nextWordButton.addActionListener((actionEvent) -> textLabel.setText(getRandomWord()));
 
         buttonPanel.add(mainViewButton);
-        //buttonPanel.add(nextWordButton);
+        buttonPanel.add(nextWordButton);
         buttonPanel.add(gutButton);
         buttonPanel.add(schlechtButton);
 

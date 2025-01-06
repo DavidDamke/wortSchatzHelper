@@ -1,6 +1,5 @@
 package com.example;
 
-import java.awt.Component;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -9,16 +8,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import javax.swing.JCheckBox;
-import javax.swing.JPanel;
-
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.formdev.flatlaf.json.Json;
-
-import netscape.javascript.JSObject;
 
 public class FileWriterUtils {
         private final String FILE_NAME_JSON = "Test.json";
@@ -50,7 +41,7 @@ public class FileWriterUtils {
               try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME_JSON))) {
 
                 writer.write(jsonArray.toString());
-                //writer.newLine();
+                writer.newLine();
 
             } catch (IOException e) {
                 e.printStackTrace();

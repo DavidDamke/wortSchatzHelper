@@ -3,15 +3,12 @@ package com.example;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
 import java.awt.Font;
-
 import java.util.ArrayList;
 import java.util.Random;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-
-import org.json.JSONObject;
 
 
 public class MainView {
@@ -25,7 +22,7 @@ public class MainView {
     FileWriterUtils fileWriterUtils = new FileWriterUtils();
 
     private ArrayList<String> wordList = new ArrayList<>();
-
+    private String lastWord;
 
     public MainView(CardLayout cardLayout,JPanel cardPanel){
                 this.cardLayout = cardLayout; 
@@ -49,7 +46,7 @@ public class MainView {
        // FontIcon settingsIcon = FontIcon.of(MaterialDesignC.COG, 16, Color.BLACK);
 
         //mainViewButton.setIcon(settingsIcon);
-       // JButton nextWordButton = new JButton("Next");
+        JButton nextWordButton = new JButton("Next");
 
         JButton gutButton = new JButton("GUT");
         JButton schlechtButton = new JButton("SCHLECHT");
@@ -78,10 +75,10 @@ public class MainView {
         mainViewButton.addActionListener((actionEvent) -> cardLayout.show(cardPanel, "SecondPage"));
         
         // Button to get the next word
-       // nextWordButton.addActionListener((actionEvent) -> textLabel.setText(getRandomWord()));
+        nextWordButton.addActionListener((actionEvent) -> textLabel.setText(getRandomWord()));
 
         buttonPanel.add(mainViewButton);
-        //buttonPanel.add(nextWordButton);
+        buttonPanel.add(nextWordButton);
         buttonPanel.add(gutButton);
         buttonPanel.add(schlechtButton);
 
@@ -106,32 +103,33 @@ public class MainView {
 
    private String getRandomWord() {
     wordList = new FileWriterUtils().getSelectedWords();
-    
 
     System.out.println(wordList);
     if (wordList.isEmpty()) {
         return "Keine Wörter verfügbar";
+    }   
+    String weightedWord = getWeightedWord();
+    while(weightedWord.equals(lastWord)){
+        weightedWord = getWeightedWord();
     }
-    System.out.println("After");
 
-    // Create a weighted list based on priorities
-    ArrayList<String> weightedWords = new ArrayList<>();
-
-    for (String word : wordList) {
-        int priority = fileWriterUtils.getPriority(word);
-
-        System.out.println(priority);
-        // Add the word to the weighted list based on its priority
-        for (int i = 0; i < priority; i++) {
-            weightedWords.add(word);
-        }
-    }
-    if (!weightedWords.isEmpty()) {
-        Random random = new Random();
-        return weightedWords.get(random.nextInt(weightedWords.size()));
-    }
-    return "Keine Wörter verfügbar";
-    // Select a random word from the weighted list
+    return weightedWord;
 }
+    private String getWeightedWord(){
+        ArrayList<String> weightedWords = new ArrayList<>();
+
+        for (String word : wordList) {
+            int priority = fileWriterUtils.getPriority(word);
+            // Add the word to the weighted list based on its priority
+            for (int i = 0; i < priority; i++) {
+                weightedWords.add(word);
+            }
+        }
+        if (!weightedWords.isEmpty()) {
+            Random random = new Random();
+            return weightedWords.get(random.nextInt(weightedWords.size()));
+        }
+        return "Keine Wörter verfügbar";
+    }
 
 }

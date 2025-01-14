@@ -16,7 +16,6 @@ import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -118,11 +117,14 @@ public class Settings {
 
         for (int i = 0; i < wordsArray.length(); i++) {
             JSONObject word = wordsArray.getJSONObject(i);
-            int prio = word.getInt("priority");
-            String name = word.getString("Name");
-            
-            updateModels(name,prio);
-        }
+            if(word.getBoolean("isSelected")){
+                System.out.println("Test");
+                int prio = word.getInt("priority");
+                String name = word.getString("Name");
+                
+                updateModels(name,prio);
+            }
+            }
     }
 
     private void updateModels(String name, int prio) {
@@ -256,6 +258,7 @@ public class Settings {
                     lowPriorityModel.removeElement(checkBox.getText());
                     highPriorityModel.removeElement(checkBox.getText());
                     mediumPriorityModel.removeElement(checkBox.getText());
+                    fileWriterUtils.updateWordValue(checkBox.getText(), checkBox.isSelected(),3);
                 }
 
             }
